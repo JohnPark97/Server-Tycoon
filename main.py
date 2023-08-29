@@ -56,46 +56,50 @@ def load_menu():
     return menu_map
 
 
-def draw_tabs(screen: pygame.Surface, category: str, button: pygame.Surface, CATEGORY_X_OFFSET: int):
+def draw_tabs(screen: pygame.Surface, menus: dict, button: pygame.Surface, CATEGORY_X_OFFSET: int):
+    global active_category  # Declare global to modify it
+
     FONT = 'Arial Black'
     menu_font = pygame.font.SysFont(FONT, 20)
     CATEGORY_TOP_OFFSET = 25
-    category_coord = (CATEGORY_X_OFFSET, CATEGORY_TOP_OFFSET)
-    
-    # scale to 1/3
-    category_button = pygame.transform.scale(button, (button.get_width(), button.get_height() // 3))
 
-    # Update the global variable
-    visible_buttons[category] = (category_button, category_coord)
+    # Set the first category as the default active category
+    if active_category is None:
+        active_category = list(menus.keys())[0]
 
-    screen.blit(category_button, category_coord)
-    
-    category_surface = menu_font.render(category, False, (0, 0, 0))
-    cat_text_x = category_coord[0] + category_button.get_width() // 2 - category_surface.get_width() // 2
-    cat_text_y = category_coord[1] + category_button.get_height() // 2 - category_surface.get_height() // 2
-    screen.blit(category_surface, (cat_text_x, cat_text_y))
+    for category in menus.keys():
+        category_coord = (CATEGORY_X_OFFSET, CATEGORY_TOP_OFFSET)
+        category_button = pygame.transform.scale(button, (button.get_width(), button.get_height() // 3))
 
-    return category_surface, category_button, category_coord
+        screen.blit(category_button, category_coord)
+        
+        category_surface = menu_font.render(category, False, (0, 0, 0))
+        cat_text_x = category_coord[0] + category_button.get_width() // 2 - category_surface.get_width() // 2
+        cat_text_y = category_coord[1] + category_button.get_height() // 2 - category_surface.get_height() // 2
+        screen.blit(category_surface, (cat_text_x, cat_text_y))
 
+        # Save to the global visible_buttons map
+        visible_buttons[category] = (category_button, category_coord)
+
+        CATEGORY_X_OFFSET += category_button.get_width() + 10
 
 def draw_menu(screen: pygame.Surface, menus: dict, active_category: str):
     BUTTON_X_OFFSET = 35
     BUTTON_TOP_OFFSET = 70
-
     button = pygame.image.load(os.path.join('assets', 'decors', 'computer', 'button.png'))
     FONT = 'Arial Black'
     menu_font = pygame.font.SysFont(FONT, 20)
 
-    if active_category in menus:
-        for menu in menus[active_category]:
-            coord = (BUTTON_X_OFFSET, BUTTON_TOP_OFFSET)
-            screen.blit(button, coord)
-            
-            text_surface = menu_font.render(menu.name, False, (0, 0, 0))
-            text_x = coord[0] + button.get_width() // 2 - text_surface.get_width() // 2
-            text_y = coord[1] + button.get_height() // 2 - text_surface.get_height() // 2
-            screen.blit(text_surface, (text_x, text_y))
-            BUTTON_X_OFFSET += button.get_width() + 10
+    for menu in menus[active_category]:
+        coord = (BUTTON_X_OFFSET, BUTTON_TOP_OFFSET)
+        screen.blit(button, coord)
+        
+        text_surface = menu_font.render(menu.name, False, (0, 0, 0))
+        text_x = coord[0] + button.get_width() // 2 - text_surface.get_width() // 2
+        text_y = coord[1] + button.get_height() // 2 - text_surface.get_height() // 2
+        screen.blit(text_surface, (text_x, text_y))
+        
+        BUTTON_X_OFFSET += button.get_width() + 10
 
 
 def draw_background(screen: pygame.Surface):
@@ -103,6 +107,7 @@ def draw_background(screen: pygame.Surface):
 
 def update_screen(screen: pygame.Surface, menus: dict, active_category: str):
     draw_background(screen)
+    draw_tabs(screen, menus, pygame.image.load(os.path.join('assets', 'decors', 'computer', 'button.png')), 35)
     draw_menu(screen, menus, active_category)
 
     pygame.display.flip()
