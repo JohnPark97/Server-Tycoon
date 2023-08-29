@@ -1,0 +1,11 @@
+{
+    "nigiri": {
+        "salmon": 3.99,
+        "tuna": 4.99
+    },
+
+    "sashimi": {
+        "salmon": 1.99,
+        "tuna": 2.99
+    }
+}
