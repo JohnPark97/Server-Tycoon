@@ -22,6 +22,7 @@ CATEGORY_BUTTON_CLICKED = pygame.USEREVENT + 1
 visible_buttons = {}
 active_category = None  # Variable to store the currently active category
 
+clicked_menus = []
 
 
 def load_prices():
@@ -101,12 +102,54 @@ def draw_menu(screen: pygame.Surface, menus: dict, active_category: str):
         
         BUTTON_X_OFFSET += button.get_width() + 10
 
+def draw_calc_screen(screen: pygame.Surface, clicked_menus):
+    # Draw the rectangle on the right side
+    rect_color = (200, 200, 200)  # Grey color
+    rect_x = SCREEN_WIDTH // 2  # Starting at the midpoint of the screen width
+    
+    rect_height = SCREEN_HEIGHT // 1.5  # 1/4 of the screen height
+    rect_y = (SCREEN_HEIGHT - rect_height) // 2  # Centering vertically
+    
+    rect_width = SCREEN_WIDTH // 2  # Filling the right half of the screen
+
+    pygame.draw.rect(screen, rect_color, (rect_x - 26, rect_y - 68, rect_width, rect_height))
+
+    # Render the names of clicked menus vertically
+    FONT = 'Arial Black'
+    menu_font = pygame.font.SysFont(FONT, 15)
+    menu_x_offset = rect_x + 10  # A bit of padding from the left of the rectangle
+    menu_y_offset = 35  # A bit of padding from the top of the rectangle
+
+    total_price = 0.0  # Initialize the total price
+
+    for menu in clicked_menus:
+        text_surface = menu_font.render(menu.name, False, (0, 0, 0))
+        screen.blit(text_surface, (menu_x_offset, menu_y_offset))
+        menu_y_offset += text_surface.get_height() + 10  # Move the y-coordinate for the next menu
+        
+        total_price += menu.price  # Add the price of the menu to the total
+
+    # Display the total price at the bottom of calc_screen
+    total_font = pygame.font.SysFont(FONT, 20)
+    total_text = f"Total: ${total_price:.2f}"
+    total_surface = total_font.render(total_text, False, (0, 0, 0))
+    total_y = 360
+    screen.blit(total_surface, (menu_x_offset, total_y))
+                
+
+def draw_monitor(screen: pygame.Surface):
+    monitor = pygame.image.load(os.path.join('assets', 'decors', 'computer', 'monitor.png'))
+    monitor = pygame.transform.scale(monitor, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.blit(monitor, (0, 0))
 
 def draw_background(screen: pygame.Surface):
     screen.fill(BACKGROUND)
 
+
 def update_screen(screen: pygame.Surface, menus: dict, active_category: str):
     draw_background(screen)
+    draw_monitor(screen)
+    draw_calc_screen(screen, clicked_menus)  # Pass clicked_menus
     draw_tabs(screen, menus, pygame.image.load(os.path.join('assets', 'decors', 'computer', 'button.png')), 35)
     draw_menu(screen, menus, active_category)
 
@@ -114,6 +157,7 @@ def update_screen(screen: pygame.Surface, menus: dict, active_category: str):
 
 def main():
     global active_category  # Declare global to modify it
+    global clicked_menus  # Declare global to modify it
 
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -132,6 +176,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
 
+                # Check for category button clicks
                 for category, (button_surface, coord) in visible_buttons.items():
                     button_x, button_y = coord
                     button_width, button_height = button_surface.get_size()
@@ -140,6 +185,19 @@ def main():
                         active_category = category  # Update the active category
                         custom_event = pygame.event.Event(CATEGORY_BUTTON_CLICKED, category=category)
                         pygame.event.post(custom_event)
+                
+                # Check for menu button clicks
+                BUTTON_X_OFFSET = 35
+                BUTTON_TOP_OFFSET = 70
+                button = pygame.image.load(os.path.join('assets', 'decors', 'computer', 'button.png'))
+                for menu in menus[active_category]:
+                    button_x, button_y = BUTTON_X_OFFSET, BUTTON_TOP_OFFSET
+                    button_width, button_height = button.get_size()
+                    if button_x <= x <= button_x + button_width and button_y <= y <= button_y + button_height:
+                        clicked_menus.append(menu)
+                    BUTTON_X_OFFSET += button.get_width() + 10
+
+                print(clicked_menus)  # For debugging
 
             elif event.type == CATEGORY_BUTTON_CLICKED:
                 print(f"Category button clicked for category: {event.category}")
