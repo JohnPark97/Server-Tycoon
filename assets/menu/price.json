@@ -6,6 +6,20 @@
 
     "sashimi": {
         "salmon sashimi": 1.99,
-        "tuna sashimi": 2.99
+        "tuna sashimi": 2.99,
+        "toro sashimi": 2.99
+    },
+
+    "maki": {
+        "california roll": 3.99,
+        "spicy tuna roll": 4.99,
+        "spicy salmon roll": 4.99,
+        "spicy toro roll": 4.99,
+        "eel roll": 4.99,
+        "avocado roll": 3.99,
+        "cucumber roll": 3.99,
+        "asparagus roll": 3.99,
+        "salmon skin roll": 4.99,
+        "salmon roll": 4.99
     }
 }

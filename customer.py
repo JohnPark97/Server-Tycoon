@@ -1,11 +1,12 @@
 import pygame
 import os
+import random
 
 class Customer:
-    def __init__(self, budget, patience):
+    def __init__(self, budget, patience, menus):
         self.image = pygame.image.load(os.path.join('assets', 'customers', 'customer_sample.png'))  # Load the customer image
         self.image = pygame.transform.scale(self.image, (400, 400))  # Scale the image to 100x100 pixels
-        self.order_list = []
+        self.order_list = self.generate_order(menus)  # Generate a list of orders
         self.budget = budget
         self.patience = patience
         self.happiness = 100  # Starts at 100 and can go down or up based on service
@@ -17,13 +18,17 @@ class Customer:
         self.font = pygame.font.SysFont("Comic Sans MS", 30)  # Font for the text
         self.timer = 0  # Timer to keep track of the time passed since the customer appeared
         
+    def generate_order(self, menus):
+        all_menus = [menu for sublist in menus.values() for menu in sublist]  # Flatten the dictionary into a list
+        num_items = random.randint(1, 5)  # The number of items the customer wants
+        return random.sample(all_menus, num_items)
+
     def place_order(self, menu_item):
         if self.budget >= menu_item.price:
             self.order_list.append(menu_item)
             self.budget -= menu_item.price
             return True
         else:
-            print("Not enough budget to place this order.")
             return False
             
     def receive_order(self, menu_item):
@@ -37,8 +42,6 @@ class Customer:
         self.patience -= time_passed
         if self.patience < 0:
             self.happiness -= 10  # Decrease happiness if they have to wait too long
-            
-
         
     def draw(self, screen, x, y):
         screen.blit(self.image, (x, y))
@@ -48,6 +51,17 @@ class Customer:
         
         # Show the text above the customer's head after 2 seconds (assuming 60 FPS)
         if self.timer > 2 * 60:
-            text_surface = self.font.render("I'm waiting!", False, (0, 0, 0))
-            pygame.draw.rect(screen, (255, 255, 255), (x, y - 40, text_surface.get_width(), text_surface.get_height()))
-            screen.blit(text_surface, (x, y - 40))
+            
+            # Draw order list in a rectangle
+            rect_width = 200
+            rect_height = 30 * len(self.order_list)  # Assuming each order takes up 30 pixels in height
+            rect_x = x
+            rect_y = y - rect_height - 10  # Positioned above the customer image
+
+            pygame.draw.rect(screen, (255, 255, 255), (rect_x, rect_y, rect_width, rect_height))
+            
+            order_y = rect_y + 5  # Start position for the first order text
+            for item in self.order_list:
+                order_text_surface = self.font.render(item.name, False, (0, 0, 0))
+                screen.blit(order_text_surface, (rect_x + 5, order_y))  # 5 is padding inside rectangle
+                order_y += 30  # Move down for the next item

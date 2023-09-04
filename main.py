@@ -36,25 +36,17 @@ def load_menu():
     menu_map = {}
     base_path = 'assets/menu'
     prices = load_prices()
-    
-    for dirpath, dirnames, filenames in os.walk(base_path):
-        for filename in filenames:
-            if filename.endswith('.png'):
-                # Extract name without extension
-                name = os.path.splitext(filename)[0]
-                
-                # Get the parent directory of the PNG
-                category = os.path.basename(dirpath)
-                
-                # Add the PNG to the map
-                if category not in menu_map:
-                    menu_map[category] = []
 
-                image = pygame.image.load(os.path.join(dirpath, filename))
-                price = prices[category][name]
-                menu = Menu(name, price, image)
+    for category in prices:
+        for name in prices[category]:
+            # Create a dummy image
+            # TODO replace this later
+            image = pygame.Surface((100, 100))
+            menu = Menu(name, prices[category][name], image)
 
-                menu_map[category].append(menu)
+            if category not in menu_map:
+                menu_map[category] = []
+            menu_map[category].append(menu)
 
     return menu_map
 
@@ -64,11 +56,12 @@ def draw_background(screen: pygame.Surface):
 def update_screen(screen: pygame.Surface, computer: Computer, customer: Customer, game_clock: GameClock):
     draw_background(screen)
     game_clock.draw()
+
     computer.draw_monitor()
     computer.draw_calc_screen()
     computer.draw_tabs()
     computer.draw_menu()
-    # Draw the customer at position (50, 50)
+
     customer.draw(screen, 30, 300)
 
     pygame.display.flip()
@@ -88,7 +81,7 @@ def main():
 
     computer = Computer(screen, menus)
     # Create a new customer with a budget of 100 and patience of 60 seconds
-    customer = Customer(100, 60)
+    customer = Customer(100, 60, menus)
     
     while run:
         clock.tick(FPS)

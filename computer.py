@@ -23,18 +23,38 @@ class Computer:
         self.monitor_img = pygame.image.load(os.path.join('assets', 'decors', 'computer', 'monitor.png'))
         self.menu_font = pygame.font.SysFont(FONT, 20)
         self.total_font = pygame.font.SysFont(FONT, 25)
+
+    def wrap_text(self, text, font, max_width):
+        words = text.split(' ')
+        lines = []
+        current_line = ''
         
+        for word in words:
+            # Check if adding the new word to the current line would exceed the max width
+            size = font.size(current_line + word + ' ')[0]
+            if size < max_width:
+                current_line += word + ' '
+            else:
+                lines.append(current_line)  # Add the current line to lines
+                current_line = word + ' '  # Start a new line with the current word
+        
+        lines.append(current_line)  # Add the last line
+        return lines
+    
     def _draw_button_with_text(self, x, y, text, scale_x, scale_y):
         scaled_button = pygame.transform.scale(self.button_img, (scale_x, scale_y))
-
-        # Draw the actual button
         self.screen.blit(scaled_button, (x, y))
-        
-        # Draw the text
-        text_surface = self.menu_font.render(text, False, (0, 0, 0))
-        text_x = x + scaled_button.get_width() // 2 - text_surface.get_width() // 2
-        text_y = y + scaled_button.get_height() // 2 - text_surface.get_height() // 2
-        self.screen.blit(text_surface, (text_x, text_y))
+
+        # Wrap the text
+        lines = self.wrap_text(text, self.menu_font, scale_x)
+
+        total_line_height = 0
+        for line in lines:
+            text_surface = self.menu_font.render(line, False, (0, 0, 0))
+            text_x = x + scaled_button.get_width() // 2 - text_surface.get_width() // 2
+            text_y = y + total_line_height + (scaled_button.get_height() - len(lines) * text_surface.get_height()) // 2
+            self.screen.blit(text_surface, (text_x, text_y))
+            total_line_height += text_surface.get_height()
 
 # Make sure to include this updated method in your Computer class.
     def draw_monitor(self):
@@ -43,9 +63,21 @@ class Computer:
 
     def draw_menu(self):
         x_coord = SCREEN_WIDTH - MONITOR_WIDTH + 20
+        y_coord = BUTTON_TOP_OFFSET
+        button_width = 100  # same as the scale_x you pass to _draw_button_with_text
+        button_height = 100  # same as the scale_y you pass to _draw_button_with_text
+
+        calc_screen_x = SCREEN_WIDTH - MONITOR_WIDTH // 2
+
         for menu in self.menus[self.active_category]:
-            self._draw_button_with_text(x_coord, BUTTON_TOP_OFFSET, menu.name, 100, 100)
-            x_coord += BUTTON_X_OFFSET + self.button_img.get_width()
+            # Check if the next button will overflow the calc_screen
+            if x_coord + button_width > calc_screen_x:
+                # Reset x_coord and update y_coord to move to the next line
+                x_coord = SCREEN_WIDTH - MONITOR_WIDTH + 20
+                y_coord += button_height + BUTTON_X_OFFSET  # Adjust this as needed
+
+            self._draw_button_with_text(x_coord, y_coord, menu.name, 100, 100)
+            x_coord += BUTTON_X_OFFSET + button_width
 
     def draw_tabs(self):
         x_coord = SCREEN_WIDTH - MONITOR_WIDTH + 20
@@ -88,19 +120,29 @@ class Computer:
         total_surface = total_font.render(total_text, False, (0, 0, 0))
         total_y = 450
         self.screen.blit(total_surface, (menu_x_offset, total_y))
-
     def handle_menu_btn_click(self, x, y):
         button_x = SCREEN_WIDTH - MONITOR_WIDTH + 20
         button_y = BUTTON_TOP_OFFSET
-        
+        button_width = 100  # same as the scale_x you pass to _draw_button_with_text
+        button_height = 100  # same as the scale_y you pass to _draw_button_with_text
+
+        calc_screen_x = SCREEN_WIDTH - MONITOR_WIDTH // 2
+
         for menu in self.menus[self.active_category]:
-            button_width, button_height = self.button_img.get_size()
+            # Check if the next button will overflow the calc_screen
+            if button_x + button_width > calc_screen_x:
+                # Reset button_x and update button_y to move to the next line
+                button_x = SCREEN_WIDTH - MONITOR_WIDTH + 20
+                button_y += button_height + BUTTON_X_OFFSET  # Adjust this as needed
+
             if button_x <= x <= button_x + button_width and button_y <= y <= button_y + button_height:
                 self.clicked_menus.append(menu)
                 return True  # A button was clicked
-                
-            button_x += self.button_img.get_width() + 10
+
+            button_x += BUTTON_X_OFFSET + button_width
+
         return False  # No button was clicked
+
 
     def handle_category_btn_click(self, x, y, CATEGORY_BUTTON_CLICKED):
         for category, (button_surface, coord) in self.visible_buttons.items():
