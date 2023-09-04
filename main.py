@@ -57,12 +57,9 @@ def update_screen(screen: pygame.Surface, computer: Computer, customer: Customer
     draw_background(screen)
     game_clock.draw()
 
-    computer.draw_monitor()
-    computer.draw_calc_screen()
-    computer.draw_tabs()
-    computer.draw_menu()
+    computer.draw()
 
-    customer.draw(screen, 30, 300)
+    customer.draw(30, 300)
 
     pygame.display.flip()
 
@@ -81,7 +78,7 @@ def main():
 
     computer = Computer(screen, menus)
     # Create a new customer with a budget of 100 and patience of 60 seconds
-    customer = Customer(100, 60, menus)
+    customer = Customer(screen, 100, 60, menus)
     
     while run:
         clock.tick(FPS)
@@ -100,12 +97,8 @@ def main():
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                # Try menu buttons first
-                if not computer.handle_menu_btn_click(x, y):
-                    # If no menu button was clicked, try category buttons
-                    computer.handle_category_btn_click(x, y, CATEGORY_BUTTON_CLICKED)
-            elif event.type == CATEGORY_BUTTON_CLICKED:
-                pass
+                computer.handle_button_click(x, y, customer)
+                
             elif event.type == TIME_UP_EVENT:
                 print("Time's up!")
 
