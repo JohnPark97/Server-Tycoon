@@ -121,19 +121,12 @@ class Computer:
             elif button.type == 'category' or button.type == 'utility':
                 button.draw(self.screen)
 
-    def check_order(self, customer):
-        # Check if clicked_menus matches the order_list in the Customer instance
-        return sorted(self.clicked_menus, key=lambda x: x.name) == sorted(customer.order_list, key=lambda x: x.name)
-    
-    def handle_button_click(self, x, y, customer):
+    def handle_button_click(self, x, y, customer, CUSTOMER_ORDER_CONFIRM_EVENT):
         for button in self.all_buttons:
             if button.is_clicked(x, y):
                 if button.type == 'utility':
                     if button.text == "Save Order":
-                        if self.check_order(customer):
-                            print("Order matches!")
-                        else:
-                            print("Order does not match!")
+                        self.handle_order_save(customer, CUSTOMER_ORDER_CONFIRM_EVENT)
                     elif button.text == "Print Bill":
                         print("Printing Bill...")
                     return True
@@ -143,6 +136,13 @@ class Computer:
                     if button.category == self.active_category:
                         clicked_menu = next(menu for menu in self.menus[button.category] if menu.name == button.text)
                         self.clicked_menus.append(clicked_menu)
+
+    def check_order(self, customer):
+        # Check if clicked_menus matches the order_list in the Customer instance
+        return sorted(self.clicked_menus, key=lambda x: x.name) == sorted(customer.order_list, key=lambda x: x.name)
+    
+    def handle_order_save(self, customer, CUSTOMER_ORDER_CONFIRM_EVENT):
+        pygame.event.post(pygame.event.Event(CUSTOMER_ORDER_CONFIRM_EVENT, got_order_right=self.check_order(customer)))
 
     def draw(self):
         self.draw_monitor()

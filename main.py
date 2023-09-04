@@ -24,8 +24,8 @@ GREEN = (0, 255, 0)
 BACKGROUND = (224, 207, 158)
 
 # Define the custom event type
-CATEGORY_BUTTON_CLICKED = pygame.USEREVENT + 1
-TIME_UP_EVENT = CATEGORY_BUTTON_CLICKED + 1
+CUSTOMER_ORDER_CONFIRM_EVENT = pygame.USEREVENT + 1
+TIME_UP_EVENT = CUSTOMER_ORDER_CONFIRM_EVENT + 1
 
 def load_prices():
     with open('assets/menu/price.json') as file:
@@ -97,8 +97,10 @@ def main():
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                computer.handle_button_click(x, y, customer)
+                computer.handle_button_click(x, y, customer, CUSTOMER_ORDER_CONFIRM_EVENT)
                 
+            elif event.type == CUSTOMER_ORDER_CONFIRM_EVENT:
+                customer.react_to_order(event.got_order_right)
             elif event.type == TIME_UP_EVENT:
                 print("Time's up!")
 

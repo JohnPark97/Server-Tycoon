@@ -1,5 +1,6 @@
 import pygame
 import os
+from common import wrap_text
 
 class Button:
     def __init__(self, x, y, width, height, text, font, button_type, category=None):
@@ -16,28 +17,11 @@ class Button:
 
     def is_clicked(self, x, y):
         return self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height
-
-    def wrap_text(self, text, font, max_width):
-        words = text.split(' ')
-        lines = []
-        current_line = ''
-        
-        for word in words:
-            # Check if adding the new word to the current line would exceed the max width
-            size = font.size(current_line + word + ' ')[0]
-            if size < max_width:
-                current_line += word + ' '
-            else:
-                lines.append(current_line)  # Add the current line to lines
-                current_line = word + ' '  # Start a new line with the current word
-        
-        lines.append(current_line)  # Add the last line
-        return lines
     
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
         
-        lines = self.wrap_text(self.text, self.font, self.width)  # Assume wrap_text is available
+        lines = wrap_text(self.text, self.font, self.width)  # Assume wrap_text is available
 
         # Calculate the total height of all lines
         total_height = 0
